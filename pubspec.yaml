@@ -1,0 +1,25 @@
+name: posadas_one_silao
+description: Aplicación de control de gastos para Posadas One Silao
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.6.0
+  
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  image_picker: ^1.0.4  # Versión estable más reciente
+  shared_preferences: ^2.2.2  # Versión actualizada
+  fl_chart: ^0.65.0  # o superior
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
