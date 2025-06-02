@@ -52,6 +52,15 @@ class DatabaseHelper {
       )
     ''');
 
+    // Crea la tabla de presupuesto
+    await db.execute('''
+      CREATE TABLE budget(
+        id INTEGER PRIMARY KEY,
+        amount REAL
+      )
+    ''');
+    await db.insert('budget', {'id': 1, 'amount': 0.0});
+
     // --- Inserta tus usuarios predefinidos de departamento en la tabla 'users' ---
     print("Insertando usuarios de departamento predefinidos...");
 
@@ -142,6 +151,33 @@ class DatabaseHelper {
     List<Map<String, dynamic>> result = await db.rawQuery('SELECT SUM(amount) FROM purchases');
     double total = result.first['SUM(amount)'] ?? 0.0;
     return total;
+  }
+
+  // Obtener el presupuesto global
+  Future<double> getBudget() async {
+    await ensureBudgetRowExists();
+    Database db = await instance.database;
+    List<Map<String, dynamic>> result = await db.query('budget', where: 'id = ?', whereArgs: [1]);
+    if (result.isNotEmpty) {
+      return result.first['amount'] ?? 0.0;
+    }
+    return 0.0;
+  }
+
+  // Actualizar el presupuesto global
+  Future<int> updateBudget(double amount) async {
+    await ensureBudgetRowExists();
+    Database db = await instance.database;
+    return await db.update('budget', {'amount': amount}, where: 'id = ?', whereArgs: [1]);
+  }
+
+  // Asegurarse de que la fila del presupuesto existe
+  Future<void> ensureBudgetRowExists() async {
+    Database db = await instance.database;
+    List<Map<String, dynamic>> result = await db.query('budget', where: 'id = ?', whereArgs: [1]);
+    if (result.isEmpty) {
+      await db.insert('budget', {'id': 1, 'amount': 0.0});
+    }
   }
 
   // Puedes añadir más métodos según necesites:

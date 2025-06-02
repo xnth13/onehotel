@@ -72,4 +72,3 @@ class MyApp extends StatelessWidget {
 // Asegúrate de que las páginas BudgetPage y HistoryPage existan e importarlas
 // import 'budget_page.dart';
 // import 'history_page.dart';
-

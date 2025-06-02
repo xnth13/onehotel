@@ -15,12 +15,14 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  double _totalExpenses = 0.0; // Variable para almacenar el total de gastos
+  double _totalExpenses = 0.0;
+  double _currentBudget = 0.0; // <-- Agrega esta línea
 
   @override
   void initState() {
     super.initState();
-    _loadTotalExpenses(); // Llama a la función para cargar el total de gastos al iniciar la página
+    _loadTotalExpenses();
+    _loadCurrentBudget(); // <-- Agrega esta línea
   }
 
   // Función para cargar el total de gastos desde la base de datos
@@ -31,10 +33,22 @@ class _HomePageState extends State<HomePage> {
       setState(() {
         _totalExpenses = totalExpenses; // Actualiza la variable de estado
       });
+      await _loadCurrentBudget(); // <-- Así siempre se actualiza el presupuesto al volver
     } catch (e) {
       // Manejo de errores
       print("Error loading total expenses: $e");
       // Opcional: mostrar un mensaje de error al usuario
+    }
+  }
+
+  Future<void> _loadCurrentBudget() async {
+    try {
+      double budget = await DatabaseHelper.instance.getBudget();
+      setState(() {
+        _currentBudget = budget;
+      });
+    } catch (e) {
+      print("Error loading budget: $e");
     }
   }
 
@@ -55,6 +69,22 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            // Presupuesto actual en la parte superior
+            Text(
+              'Presupuesto Actual: \$${_currentBudget.toStringAsFixed(2)}',
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.green),
+            ),
+            const SizedBox(height: 10),
+            // Presupuesto restante
+            Text(
+              'Presupuesto Restante: \$${(_currentBudget - _totalExpenses).toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: (_currentBudget - _totalExpenses) < 0 ? Colors.red : Colors.green,
+              ),
+            ),
+            const SizedBox(height: 10),
             const Text(
               'Total de Gastos Registrados:',
               style: TextStyle(fontSize: 20),

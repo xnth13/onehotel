@@ -33,42 +33,23 @@ class _BudgetPageState extends State<BudgetPage> {
 
   // Carga el presupuesto actual del usuario (si aplica) y el total de gastos
   Future<void> _loadBudgetData() async {
-     setState(() { _isLoading = true; });
-     try {
-       // **Importante:** Debes implementar un método en DatabaseHelper para obtener el presupuesto del usuario
-       // Este es solo un EJEMPLO hipotético. Ajusta según cómo guardes el presupuesto.
-       // Si el presupuesto es global y lo guardas en una tabla diferente, la lógica cambiaría.
-
-       // Ejemplo (asumiendo que añadiste un método getBudgetByUsername en DatabaseHelper):
-       // Map<String, dynamic>? user = await DatabaseHelper.instance.getUserByUsername(widget.username);
-       // double loadedBudget = user?['budget'] ?? 0.0; // Obtiene el presupuesto o 0.0 si es null
-
-       // Por ahora, si no tienes un método para obtener el presupuesto guardado,
-       // puedes inicializar _currentBudget a 0.0 o a un valor por defecto.
-       // Si el presupuesto es GLOBAL, podrías tener una única entrada en otra tabla.
-       // Asumimos que ya tienes una forma de obtener el presupuesto actual (incluso si es 0.0 la primera vez)
-       // Para este ejemplo, mantendremos _currentBudget como una variable de estado que se actualiza al guardar.
-       // Si tu presupuesto está guardado en DB, la línea de abajo REALMENTE debería cargarlo.
-       // Por ahora, la dejaré comentada o la inicializaré:
-       // _currentBudget = 0.0; // O carga desde DB si ya implementaste el método
-
-
-       // Obtiene el total de gastos de la base de datos
-       double totalExpenses = await DatabaseHelper.instance.getTotalExpenses();
-
-       setState(() {
-         // _currentBudget = loadedBudget; // Descomenta y usa si cargas el presupuesto de DB
-         _totalExpenses = totalExpenses;
-         _isLoading = false; // Oculta el indicador de carga
-       });
-     } catch (e) {
-        print("Error loading budget data: $e");
-        setState(() { _isLoading = false; }); // Oculta incluso si hay error
-         ScaffoldMessenger.of(context).showSnackBar(
-           const SnackBar(content: Text('Error al cargar datos del presupuesto.')),
-         );
-     }
+  setState(() { _isLoading = true; });
+  try {
+    double loadedBudget = await DatabaseHelper.instance.getBudget();
+    double totalExpenses = await DatabaseHelper.instance.getTotalExpenses();
+    setState(() {
+      _currentBudget = loadedBudget;
+      _totalExpenses = totalExpenses;
+      _isLoading = false;
+    });
+  } catch (e) {
+    print("Error loading budget data: $e");
+    setState(() { _isLoading = false; });
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Error al cargar datos del presupuesto.')),
+    );
   }
+}
 
 
   // Guarda el presupuesto en la base de datos
@@ -83,36 +64,15 @@ class _BudgetPageState extends State<BudgetPage> {
     }
 
      try {
-       // **Importante:** Debes implementar un método en DatabaseHelper para actualizar el presupuesto.
-       // Este es solo un EJEMPLO hipotético. Ajusta según cómo guardes el presupuesto.
-       // Si el presupuesto es por usuario, necesitarías el username.
-       // Si es global, la lógica sería diferente.
-
-       // Ejemplo (asumiendo que añadiste un método updateBudget en DatabaseHelper):
-       // int rowsAffected = await DatabaseHelper.instance.updateBudget(newBudgetAmount, widget.username); // Si es por usuario
-       // int rowsAffected = await DatabaseHelper.instance.updateGlobalBudget(newBudgetAmount); // Si es global
-
-       // Para este ejemplo, simplemente actualizaremos la variable de estado y asumiremos
-       // que tienes o añadirás la lógica de base de datos para guardar.
-       // Si la base de datos falla, el estado visual no coincidirá.
-       // DEBES AÑADIR LA LÓGICA DE BASE DE DATOS AQUÍ.
-
+       await DatabaseHelper.instance.updateBudget(newBudgetAmount);
        setState(() {
-         _currentBudget = newBudgetAmount; // Actualiza la variable de estado (si la guardas aquí)
-         _budgetController.clear(); // Limpia el campo de texto
+         _currentBudget = newBudgetAmount;
+         _budgetController.clear();
        });
-
-       // **Aquí es donde deberías llamar al método de tu DatabaseHelper para guardar el nuevo presupuesto.**
-       // Ejemplo:
-       // await DatabaseHelper.instance.updateBudget(newBudgetAmount); // Llama a tu método de guardado
-
        ScaffoldMessenger.of(context).showSnackBar(
          const SnackBar(content: Text('Presupuesto guardado con éxito!')),
        );
-
-       // Opcional: Recarga los datos para asegurarte de que todo está sincronizado
-        _loadBudgetData();
-
+       _loadBudgetData();
      } catch (e) {
        print("Error saving budget: $e");
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,4 +150,3 @@ class _BudgetPageState extends State<BudgetPage> {
     );
   }
 }
-
